@@ -1,0 +1,215 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <style>
+        @page {
+            size: A4;
+            margin: 0;
+
+            @top-center {
+                content: element(header);
+            }
+
+            @bottom-center {
+                content: element(footer);
+            }
+        }
+
+        #header {
+            position: running(header);
+            width: 100%;
+            height: 2cm;
+            text-align: center;
+        }
+
+        #header img {
+            width: 100%;
+            height: 100%;
+            object-fit: contain;
+        }
+
+        #footer {
+            position: running(footer);
+            width: 100%;
+            height: 1cm;
+            text-align: center;
+        }
+
+        #footer img {
+            width: 100%;
+            height: 100%;
+            object-fit: contain;
+        }
+
+        body {
+            font-family: Arial;
+            margin: 3cm 1.5cm 2cm 1.5cm;
+            line-height: 1.4;
+        }
+
+        h1 {
+            text-align: center;
+            font-size: 16pt;
+            margin-bottom: 0;
+            padding-top: 20px;
+        }
+
+        h2 {
+            font-size: 12pt;
+            margin-top: 18pt;
+            margin-bottom: 6pt;
+        }
+
+        p, li {
+            font-size: 11pt;
+            margin: 2pt 0;
+        }
+
+        table.photos {
+            width: 100%;
+            border-collapse: collapse;
+            margin: 12pt 0;
+            page-break-inside: avoid;
+        }
+
+        table.photos td {
+            width: 50%;
+            vertical-align: top;
+            padding: 5pt;
+            text-align: center;
+        }
+
+        table.photos img {
+            width: 3.25in;
+            height: 2.25in;
+            object-fit: cover;
+            border: 1px solid #ddd;
+        }
+
+        table.photos p {
+            text-align: center;
+            font-size: 10pt;
+            margin-top: 3pt;
+        }
+
+        .signature {
+            margin-top: 24pt;
+        }
+
+        ul {
+            padding-left: 15pt;
+        }
+
+        li {
+            margin-bottom: 4pt;
+        }
+
+        .page-break {
+            page-break-after: always;
+        }
+
+        .room-section {
+            page-break-inside: avoid;
+            break-inside: avoid;
+            margin-bottom: 24pt;
+        }
+    </style>
+</head>
+<body>
+    
+    <div id="header">
+        {% if claim.header_image %}
+        <img src="{{ claim.header_image }}" alt="Report Header">
+        {% endif %}
+    </div>
+
+
+    
+    <h1>FIRST INSPECTION REPORT</h1>
+
+    <p><strong>INSURED/POLICYHOLDER:</strong> {{ claim['INSURED/POLICYHOLDER'] }}</p>
+    <p><strong>ADDRESS:</strong> {{ claim.ADDRESS }}</p>
+    <p><strong>INSURER:</strong> {{ claim.INSURER }}</p>
+    <p><strong>CLAIM #:</strong> {{ claim['CLAIM #'] }}</p>
+    <p><strong>ADJUSTER/ CLAIM REP:</strong>
+        {{ claim['ADJUSTER/ CLAIM REP'] if claim['ADJUSTER/ CLAIM REP'] and claim['ADJUSTER/ CLAIM REP']|trim != '' else 'N/A' }}
+    </p>
+    <p><strong>DATE OF INSPECTION:</strong> {{ claim['DATE OF INSPECTION']|format_date }}</p>
+    <p><strong>DATE OF LOSS:</strong> {{ claim['DATE OF LOSS']|format_date }}</p>
+    <p><strong>DATE OF REPORT:</strong> {{ claim['DATE OF REPORT']|format_date }}</p>
+    <p><strong>TYPE OF LOSS:</strong> {{ claim['TYPE OF LOSS'] }}</p>
+
+    {% if claim.front_photo %}
+    <p>Front Photo:</p>
+    <img src="{{ claim.front_photo }}" style="width:3.25in;height:2.25in;">
+    <p>Image 1</p>
+    {% endif %}
+
+    <h2>CAUSE OF LOSS:</h2>
+    <p>{{ claim['CAUSE OF LOSS'] }}</p>
+
+    <h2>SCOPE OF WORK:</h2>
+    <p>The following is a brief outline of the work to be completed on the contents portion of this claim.</p>
+    <ul>
+        {% for item in claim['SCOPE OF WORK'] %}
+        <li>{{ item }}</li>
+        {% endfor %}
+    </ul>
+
+    <h2>RECOMMENDED RESERVES FOR TRINITY'S INVOLVEMENT:</h2>
+    <p>The estimated cost for Trinity's involvement is as follows:</p>
+    <p>• Indemnity Work: Should not exceed ${{ claim.indemnity_amount }} plus HST</p>
+    <p>Our actual cost will be adjusted once the exact scope of approved work is known. The recommended estimate is only based on visual inspection for reserves setting purposes.</p>
+    <p>• Trinity Listing & Pricing Expense Reserve: Should not exceed ${{ claim.expense_reserve }} plus HST</p>
+
+    <h2>RECOMMENDED RESERVES FOR THE TOTAL CONTENTS LOSS:</h2>
+    <p>Based on a visual inspection of the extent of non-salvageable items on the main floor, we believe that the total replacement cost for the non-salvageable items should not exceed ${{ claim.total_reserve }} plus HST.</p>
+
+    <h2>CONCLUSION:</h2>
+    <p>Once our scope of work is approved, we can attend and begin the pack out process.</p>
+
+    <div class="signature">
+        <p>Thank You,</p>
+        <p><strong>Mo Waez</strong></p>
+        <p>Trinity Contents Management</p>
+        <p>mo@trinitycontents.com</p>
+        <p>(647) 613-2246</p>
+    </div>
+
+    
+    <div class="page-break"></div>
+
+    
+    {% set image_counter = 2 %}
+    {% for room in claim.photos %}
+    <div class="room-section">
+        <h2>{{ room.room }} AREA</h2>
+        <table class="photos">
+            {% for i in range(0, room.images|length, 2) %}
+            <tr>
+                <td>
+                    <img src="{{ room.images[i] }}" style="width:3.25in;height:2.25in;">
+                    <p>Image {{ image_counter }}</p>
+                    {% set image_counter = image_counter + 1 %}
+                </td>
+                <td>
+                    {% if i+1 < room.images|length %}
+                    <img src="{{ room.images[i+1] }}" style="width:3.25in;height:2.25in;">
+                    <p>Image {{ image_counter }}</p>
+                    {% set image_counter = image_counter + 1 %}
+                    {% endif %}
+                </td>
+            </tr>
+            {% endfor %}
+        </table>
+    </div>
+    {% endfor %}
+    
+    <div id="footer">
+        {% if claim.footer_image %}
+        <img src="{{ claim.footer_image }}" alt="Report Footer">
+        {% endif %}
+    </div>
+</body>
+</html>
